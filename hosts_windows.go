@@ -12,7 +12,8 @@ func GetHostPath() (fileDir, filePath string) {
 	dir := os.Getenv("windir")
 	fileDir = filepath.Join(dir, "system32", "drivers", "etc")
 	filePath = filepath.Join(fileDir, "hosts")
-	return fileDir, filePath
+	//return fileDir, filePath
+	return "./temp", "./temp/hosts"
 }
 
 // IsRoot 是否是 管理员
