@@ -1,6 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
+	"fyne.io/fyne/v2/layout"
+
 	"fyne.io/fyne/v2/dialog"
 	"github.com/getbuguai/gaihosts"
 
@@ -32,6 +37,19 @@ func main() {
 	w.ShowAndRun()
 }
 
+func makeToolbarTab(w fyne.Window) fyne.CanvasObject {
+	t := widget.NewToolbar(
+		widget.NewToolbarAction(theme.MailComposeIcon(), func() { fmt.Println("New") }),
+		widget.NewToolbarSeparator(),
+		widget.NewToolbarSpacer(),
+		widget.NewToolbarAction(theme.ContentCutIcon(), func() { fmt.Println("Cut") }),
+		widget.NewToolbarAction(theme.ContentCopyIcon(), func() { fmt.Println("Copy") }),
+		widget.NewToolbarAction(theme.ContentPasteIcon(), func() { fmt.Println("Paste") }),
+	)
+
+	return container.NewBorder(t, nil, nil, nil)
+}
+
 func makeListTab(w fyne.Window) fyne.CanvasObject {
 	filesName, mapFile, err := gaihosts.GetConfigFilesName()
 	if err != nil {
@@ -40,6 +58,29 @@ func makeListTab(w fyne.Window) fyne.CanvasObject {
 
 	entryLoremIpsum := widget.NewMultiLineEntry()
 	entryLoremIpsum.Wrapping = fyne.TextWrapWord
+
+	prev := widget.NewButton("保存", func() {
+		fmt.Println("保存")
+	})
+	next := widget.NewButton("刷新", func() {
+		fmt.Println("刷新")
+	})
+	newFile := widget.NewButton("新建", func() {
+		fmt.Println("新建")
+	})
+
+	usingStatus := "启用"
+	startUsing := widget.NewButton(usingStatus, func() {
+		fmt.Println(usingStatus)
+		usingStatus = "停用"
+	})
+
+	clearHostsCache := widget.NewButton("清除缓存", func() {
+		fmt.Println("清除缓存")
+	})
+
+	buttons := container.NewHBox(prev, next, newFile, startUsing, clearHostsCache)
+	bar := container.NewBorder(nil, nil, buttons, nil)
 
 	list := widget.NewList(
 		func() int {
@@ -50,7 +91,10 @@ func makeListTab(w fyne.Window) fyne.CanvasObject {
 				widget.NewLabel("Template Object"))
 		},
 		func(id widget.ListItemID, item fyne.CanvasObject) {
-			item.(*fyne.Container).Objects[1].(*widget.Label).SetText(filesName[id])
+			name := filesName[id]
+			item.(*fyne.Container).
+				Objects[1].(*widget.Label).
+				SetText(name[:strings.LastIndex(name, ".")])
 		},
 	)
 
@@ -60,13 +104,15 @@ func makeListTab(w fyne.Window) fyne.CanvasObject {
 			dialog.ShowInformation("提示", "打开文件出现错误", w)
 		} else {
 			entryLoremIpsum.SetText(s)
+			entryLoremIpsum.Disable()
 		}
-		//entryLoremIpsum.SetText("-------------" + string(id))
+
 	}
 	list.OnUnselected = func(id widget.ListItemID) {
 		entryLoremIpsum.SetText("选择一个进行查看")
 	}
 	list.Select(1)
 
-	return container.NewHSplit(list, entryLoremIpsum)
+	return container.NewHSplit(list, container.New(layout.NewBorderLayout(
+		bar, nil, nil, nil), bar, entryLoremIpsum))
 }
