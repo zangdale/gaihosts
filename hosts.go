@@ -21,7 +21,7 @@ func GetHostsFileByte() (res []byte,err error) {
 	return res, err
 }
 
-// GetHostsByte 获取文件中的内容
+// SetHostsFileByte 获取文件中的内容
 func SetHostsFileByte(body []byte) (err error) {
 
 	stat, err := os.Stat(hostFilePath)
